@@ -1,73 +1,90 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import TWEEN from '@tweenjs/tween.js'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as dat from 'lil-gui'
      
-     // Initialisation of the scene / camera / renderer
-	 let scene = new THREE.Scene();
-	 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-	 let renderer = new THREE.WebGLRenderer();
+const gui = new dat.GUI()
+// Initialisation of the scene / camera / renderer
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+let renderer = new THREE.WebGLRenderer();
 
-	 renderer.setSize( window.innerWidth, window.innerHeight );
+let loaded = false;
 
-	 renderer.shadowMap.enabled = true;
-     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-     camera.position.set(31.865130389479635, 34.35287069314487, 45.77348779101405)
+camera.position.set(31.865130389479635, 34.35287069314487, 45.77348779101405)
 
-	 document.body.appendChild( renderer.domElement );
-     setTimeout(() => {
-        camera.position.z = 2000;
-        renderer.domElement.style.visibility = "visible"
-     },2000)
+document.body.appendChild( renderer.domElement );
 
-     let controls = new OrbitControls( camera, renderer.domElement );
-     controls.enableDamping = true;
-	 
-	 // Initialisation of your objects / materials / light
-	 let solarSystem = new THREE.Object3D();
-	 scene.add(solarSystem);
+let controls = new OrbitControls( camera, renderer.domElement );
+controls.enableDamping = true;
 
-	 let ball = new THREE.SphereGeometry(1, 32, 32);
-     let ring = new THREE.RingGeometry( 1.5, 2.5);
-     let planets =[
-            {name: "sun", distance: 0, speed: 0.01, rotationSpeed: 0.01, size: 2.5, texture: "textures/sun.jpg"},
-            {name: "mercure", distance: 6, speed: 0.03, rotationSpeed: 0.4, size: 0.5, texture: "textures/mercure.jpg"},
-            {name: "venus", distance: 10, speed: 0.03, rotationSpeed: 0.8, size: 0.8, texture: "textures/venus.jpg"},
-            {name: "earth", distance: 13.5, speed: 0.03, rotationSpeed: 1, size: 1, texture: "textures/earth.jpg"},
-            {name: "mars", distance: 16, speed: 0.03, rotationSpeed: 0.7, size: 0.8, texture: "textures/mars.jpg"},
-            {name: "jupiter", distance: 32, speed: 0.03, rotationSpeed: 0.5, size: 1.5, texture: "textures/jupiter.jpg"},
-            {name: "saturne", distance: 38, speed: 0.03, rotationSpeed: 0.1, size: 1.2, texture: "textures/saturne.jpg"},
-            {name: "uranus", distance: 42, speed: 0.06, rotationSpeed: 0.2, size: 1, texture: "textures/uranus.jpg"},
-            {name: "neptune", distance: 46, speed: 1, rotationSpeed: 0.6, size: 1, texture: "textures/neptune.jpg"}
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight
+}
 
-     ];
 
-	 for (const planet of planets) {
-        let texture = new THREE.TextureLoader().load(planet.texture);
-        let material = new THREE.MeshPhongMaterial( { map: texture } );
-        let mesh = new THREE.Mesh(ball, material);
+// Initialisation of your objects / materials / light
+let solarSystem = new THREE.Object3D();
+scene.add(solarSystem);
+
+let ball = new THREE.SphereGeometry(1, 32, 32);
+let ring = new THREE.RingGeometry( 1.5, 2.5);
+let planets =[
+    {name: "Soleil", distance: 0, speed: 0.01, rotationSpeed: 0.01, size: 2.5, texture: "textures/sun.jpg"},
+    {name: "Mercure", distance: 6, speed: 0.03, rotationSpeed: 0.4, size: 0.5, texture: "textures/mercure.jpg"},
+    {name: "Vénus", distance: 10, speed: 0.03, rotationSpeed: 0.8, size: 0.8, texture: "textures/venus.jpg"},
+    {name: "Terre", distance: 13.5, speed: 0.03, rotationSpeed: 1, size: 1, texture: "textures/earth.jpg"},
+    {name: "clouds", distance: 13.5, speed: 0.035, rotationSpeed: 1, size: 1.02, texture: "textures/clouds.jpg"},
+    {name: "Mars", distance: 16, speed: 0.03, rotationSpeed: 0.7, size: 0.8, texture: "textures/mars.jpg"},
+    {name: "Jupiter", distance: 32, speed: 0.03, rotationSpeed: 0.5, size: 1.5, texture: "textures/jupiter.jpg"},
+    {name: "Saturne", distance: 38, speed: 0.03, rotationSpeed: 0.1, size: 1.2, texture: "textures/saturne.jpg"},
+    {name: "Uranus", distance: 42, speed: 0.06, rotationSpeed: 0.2, size: 1, texture: "textures/uranus.jpg"},
+    {name: "Neptune", distance: 46, speed: 1, rotationSpeed: 0.6, size: 1, texture: "textures/neptune.jpg"}
+
+];
+
+
+for (const planet of planets) {
+    let texture = new THREE.TextureLoader().load(planet.texture);
+    let material = new THREE.MeshStandardMaterial( { map: texture } );
+    let mesh = new THREE.Mesh(ball, material);
+    mesh.scale.set(planet.size, planet.size, planet.size);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    if(planet.name == "Soleil"){
+        material = new THREE.MeshBasicMaterial( { map: texture } );
+        mesh = new THREE.Mesh(ball, material);
         mesh.scale.set(planet.size, planet.size, planet.size);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        if(planet.name == "sun"){
-            material = new THREE.MeshBasicMaterial( { map: texture } );
-            mesh = new THREE.Mesh(ball, material);
-            mesh.scale.set(planet.size, planet.size, planet.size);
-        }
-        solarSystem.add(mesh);
-     }
+    }
+    else if(planet.name == "clouds"){
+        material = new THREE.MeshStandardMaterial( { map: texture, transparent: true, opacity: 0.5 } );
+        mesh = new THREE.Mesh(ball, material);
+        mesh.scale.set(planet.size, planet.size, planet.size);
+    }
+    mesh.position.y = 0;
+    mesh.name = planet.name;
+    gui.add(mesh.position, 'y', -100, 100).name("Height")
+    solarSystem.add(mesh);
+}
 
-    let ringMaterial = new THREE.MeshPhongMaterial( { map : new THREE.TextureLoader().load( 'textures/saturne.jpg' ), side: THREE.DoubleSide } );
+    let ringMaterial = new THREE.MeshStandardMaterial( { map : new THREE.TextureLoader().load( 'textures/saturn_ring.png' ), side: THREE.DoubleSide } );
+    ringMaterial.transparent = true;
     let ringSaturne = new THREE.Mesh(ring, ringMaterial);
+    ringSaturne.name = "ringSaturne";
     ringSaturne.rotation.x = -Math.PI/1.5;
     solarSystem.add( ringSaturne);
 
-    let lune = new THREE.Mesh(ball, new THREE.MeshPhongMaterial( { map: new THREE.TextureLoader().load( 'textures/lune.jpg' ) } ));
+    let lune = new THREE.Mesh(ball, new THREE.MeshStandardMaterial( { map: new THREE.TextureLoader().load( 'textures/lune.jpg' ) } ));
     lune.scale.set(0.3, 0.3, 0.3);
     lune.castShadow = true;
     lune.receiveShadow = true;
+    lune.name = "Lune";
     solarSystem.add(lune);
 
     // Clock
@@ -75,11 +92,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 	 
     // Lights
     let sunlight = new THREE.PointLight(0xffffff, 250, 100);
+    gui.add(sunlight, 'decay', 0, 10).name("Decay")
+    gui.add(sunlight, 'distance', 0, 1000).name("Distance")
+    gui.add(sunlight, 'intensity', 0, 1000).name("Power")
+
     sunlight.position.set(0, 0, 0);
     sunlight.castShadow = true;
     scene.add(sunlight);
 
-    let ambientLight = new THREE.AmbientLight(0x404040);
+    let ambientLight = new THREE.AmbientLight(0x404040, 0.25);
     scene.add(ambientLight);
 
     // Shadows
@@ -93,53 +114,17 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     let starsGeometry = new THREE.BufferGeometry();
     let starsVertices = [];
     
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 11500; i++) {
         let star = new THREE.Vector3();
-        star.x = THREE.MathUtils.randFloatSpread(2000); 
-        star.y = THREE.MathUtils.randFloatSpread(2000);
-        star.z = THREE.MathUtils.randFloatSpread(2000);
+        star.x = THREE.MathUtils.randFloatSpread(2500); 
+        star.y = THREE.MathUtils.randFloatSpread(2500);
+        star.z = THREE.MathUtils.randFloatSpread(2500);
         starsVertices.push(star.x, star.y, star.z); 
     }
     
     starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
     let stars = new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: 0x888888 }));
     scene.add(stars);
-
-    // Asteroids
-    let ceinture = new THREE.Object3D();
-    const asteroidsMaterial = new THREE.MeshPhongMaterial({ map : new THREE.TextureLoader().load( 'textures/asteroid.jpg' ) }); 
-    const circularRadius = 24;
-    
-    for (let i = 0; i < 2000; i++) {
-        let asteroidsGeometry = new THREE.TetrahedronGeometry(1,THREE.MathUtils.randInt(1,4));
-        const asteroid = new THREE.Vector3();
-        
-        const angle = Math.random() * Math.PI * 2;
-        const randomRadius = Math.sqrt(Math.random()) * circularRadius;
-            
-            asteroid.x = randomRadius * Math.cos(angle);
-            asteroid.z = randomRadius * Math.sin(angle);
-            asteroid.y = THREE.MathUtils.randFloatSpread(2);
-
-            if (Math.sqrt(asteroid.x * asteroid.x + asteroid.z * asteroid.z) < 17) {
-                const minRadius = 20;
-                
-                const newRandomRadius = THREE.MathUtils.randFloat(minRadius, circularRadius);
-                const newRandomAngle = Math.random() * Math.PI * 2;
-                
-                asteroid.x = newRandomRadius * Math.cos(newRandomAngle);
-                asteroid.z = newRandomRadius * Math.sin(newRandomAngle);
-            }
-    
-        const asteroidMesh = new THREE.Mesh(asteroidsGeometry, asteroidsMaterial);
-        asteroidMesh.position.set(asteroid.x, asteroid.y, asteroid.z);
-        console.log(asteroidMesh.position)
-        let size = THREE.MathUtils.randFloat(0.05, 0.08);
-        asteroidMesh.scale.set(size, size, size);
-        asteroidMesh.name = "asteroid";
-        ceinture.add(asteroidMesh);
-    }
-    scene.add(ceinture);
     
 
     /**
@@ -152,6 +137,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     window.addEventListener('mousedown', (event) =>
     {
+        console.log(event);
         // Mouse position
         pointer.x = (event.clientX / sizes.width) * 2 - 1
         pointer.y = - (event.clientY / sizes.height) * 2 + 1
@@ -161,49 +147,31 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         const intersects = raycaster.intersectObjects( scene.children );
 
+        console.log(intersects);
         for (const element of intersects) {
-            if(element.object.type !== "Points" && element.object.name !== "asteroid"){
+            if(element.object.type !== "Points" && element.object.name !== "asteroid" && element.object.name !== "ringSaturne"){
                 clickedObject = element.object;
                 inClick = true;
+                console.log(clickedObject.name);
+                document.getElementById("pnameText").style.opacity = 1;
+                document.getElementById("pnameText").innerHTML = clickedObject.name;
             }
         }
-
+1
 
         if(inClick && event.button == 2){
             inClick = false;
+            document.getElementById("pnameText").style.opacity = 0;
             controls.target = new THREE.Vector3(0,0,0);
         }
 
     })
 
-    
-    solarSystem.children[0].addEventListener('mouseover', (event) =>
-    {
-        console.log("test");
 
-        // Mouse position
-        pointer.x = (event.clientX / sizes.width) * 2 - 1
-        pointer.y = - (event.clientY / sizes.height) * 2 + 1
-
-        // Raycaster
-        raycaster.setFromCamera(pointer, camera)
-
-        const intersects = raycaster.intersectObjects( scene.children );
-
-        for (const element of intersects) {
-            if(element.object.type !== "Points"){
-                element.object.material.color.set(0xff0000);
-            }
-        }
-    })
     
     /**
      * Resize
      */
-    const sizes = {
-        width: window.innerWidth,
-        height: window.innerHeigh
-    }
     window.addEventListener('resize', () => {
         // Update sizes
         sizes.width = window.innerWidth
@@ -235,35 +203,86 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     let timePassed = 0;
     window.addEventListener('keydown', (event) =>
     {
+        console.log(document.getElementById("title").style.opacity)
+        if(event.key == " " && loaded){
+            if(document.getElementById("title").style.opacity == ""){
+                renderer.domElement.style.visibility = "visible"
 
-        if(event.key == " "){
-            if(isPaused){
-                isPaused = false;
-                clock.start();
-                clock.elapsedTime = timePassed;
-                document.getElementById("pause").style.display = "none";
+                document.getElementById("title").style.opacity = "0";
+                setTimeout(() => {
+                    document.getElementById("title").style.display = "none";
+                }, 4000);
+
                 new TWEEN.Tween(camera.position)
                 .to(
                     {
                         z: 45.77348779101405
                     },
-                    4000
+                    5000
                 )
                 .easing(TWEEN.Easing.Circular.Out)
                 .start()
+                setTimeout(() => {
+                    controls.maxDistance = 1200;
+                    sizes.width = window.innerWidth
+                    sizes.height = window.innerHeight
+                
+                    camera.aspect = sizes.width / sizes.height
+                    camera.updateProjectionMatrix()
+                
+                    renderer.setSize(sizes.width, sizes.height)
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+                    document.body.style.width = sizes.width + "px";
+                    document.body.style.height = sizes.height + "px";
+                }, 5000);
+
+            }
+            else if(isPaused){
+                isPaused = false;
+                clock.start();
+                clock.elapsedTime = timePassed;
+                document.getElementById("pause").style.display = "none";
             }
             else{
                 isPaused = true;
                 timePassed = clock.getElapsedTime();
                 clock.stop();
-                console.log(camera.position);
-                camera.position.z = 2000
                 document.getElementById("pause").style.display = "block";
             }
         }
     })
 
-    // Load 
+    
+    // Asteroids
+    let ceinture = new THREE.Object3D();
+    const asteroidsMaterial = new THREE.MeshStandardMaterial({ map : new THREE.TextureLoader().load( 'textures/asteroid.jpg' ) }); 
+    let asteroidsGeometry = new THREE.TetrahedronGeometry(1,2);
+
+    fetch('asteroidData.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Erreur de chargement du fichier JSON');
+      }
+      return response.json();
+    })
+    .then(data => {
+        for (let i = 0; i < 2000; i++) {
+            const asteroidMesh = new THREE.Mesh(asteroidsGeometry, asteroidsMaterial);
+            asteroidMesh.position.set(data[i].x, data[i].y, data[i].z);
+
+            let size = THREE.MathUtils.randFloat(0.05, 0.08);
+            asteroidMesh.scale.set(size, size, size);
+            asteroidMesh.name = "asteroid";
+            ceinture.add(asteroidMesh);
+        }
+        render();
+        scene.add(ceinture);
+
+    })
+    .catch(error => {
+      console.error('Une erreur s\'est produite :', error);
+    });
 
 
     // Rotation Animation
@@ -276,9 +295,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     }
 
+
 	 // This is executed for each frames
 	 function render() {
 	     requestAnimationFrame( render );
+         let actualtime = Date.now()
+
+         if(!loaded){
+            actualtime = Date.now()
+         }
 
 	     // Animation code goes here
          if(!isPaused){
@@ -287,12 +312,12 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
             for (let i = 0; i < solarSystem.children.length-2; i++) {
                 rota(solarSystem.children[i],i,elapsedTime)
 
-                if(planets[i].name == "saturne"){
+                if(planets[i].name == "Saturne"){
                     ringSaturne.position.x = solarSystem.children[i].position.x;
                     ringSaturne.position.z = solarSystem.children[i].position.z;
                     ringSaturne.rotation.z += 0.01;
                 }
-                else if(planets[i].name == "earth"){
+                else if(planets[i].name == "Terre"){
                     lune.position.x = solarSystem.children[i].position.x + 2 * Math.sin(elapsedTime * 7);
                     lune.position.z = solarSystem.children[i].position.z + 2 *Math.cos(elapsedTime * 7);
                     lune.rotation.y += 0.01;
@@ -302,8 +327,6 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
             if(inClick){
                 controls.target = clickedObject.position;
-                camera.position.x = clickedObject.position.x+5;
-                camera.position.z = clickedObject.position.z + 5;
             }
 
             ceinture.rotation.y = elapsedTime/20;
@@ -312,6 +335,37 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         
         TWEEN.update()
-	     renderer.render( scene, camera );
+	    renderer.render( scene, camera );
+
+        if(!loaded){
+            if(Date.now() - actualtime > 2000 || (clock.getElapsedTime() > 6)){
+                loaded = true;
+    
+                document.getElementById("divCtn").style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById("divCtn").style.display = "none";
+                    camera.position.z = 3000;
+                }, 2000);
+
+                setTimeout(() => {
+                start()
+                }, 1000);
+            }
+            console.log(Date.now() - actualtime + "ALORS");
+
+        }
 	 }
-	 render();
+
+     function start(){
+        document.getElementById("h1-title").style.opacity = 1;
+            document.getElementById("h1-title").style.top = 0;
+            setTimeout(() => {
+                document.getElementById("p1-title").style.opacity = 1;
+                document.getElementById("p1-title").style.top = 0;
+            }, 1300);
+            setTimeout(() => {
+                document.getElementById("p2-title").style.opacity = 1;
+                document.getElementById("p2-title").style.top = 0;
+            }, 2300);
+     }
+
