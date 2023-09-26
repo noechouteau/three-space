@@ -1,10 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import TWEEN from '@tweenjs/tween.js'
-import * as dat from 'lil-gui'
-     
 
-const gui = new dat.GUI()
 // Initialisation of the scene / camera / renderer
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -69,7 +66,6 @@ for (const planet of planets) {
     }
     mesh.position.y = 0;
     mesh.name = planet.name;
-    gui.add(mesh.position, 'y', -100, 100).name("Height")
     solarSystem.add(mesh);
 }
 
@@ -92,9 +88,7 @@ for (const planet of planets) {
 	 
     // Lights
     let sunlight = new THREE.PointLight(0xffffff, 250, 100);
-    gui.add(sunlight, 'decay', 0, 10).name("Decay")
-    gui.add(sunlight, 'distance', 0, 1000).name("Distance")
-    gui.add(sunlight, 'intensity', 0, 1000).name("Power")
+
 
     sunlight.position.set(0, 0, 0);
     sunlight.castShadow = true;
@@ -137,32 +131,31 @@ for (const planet of planets) {
 
     window.addEventListener('mousedown', (event) =>
     {
-        console.log(event);
-        // Mouse position
-        pointer.x = (event.clientX / sizes.width) * 2 - 1
-        pointer.y = - (event.clientY / sizes.height) * 2 + 1
+        if(loaded && document.getElementById("title").style.display === "none"){
+            // Mouse position
+            pointer.x = (event.clientX / sizes.width) * 2 - 1
+            pointer.y = - (event.clientY / sizes.height) * 2 + 1
 
-        // Raycaster
-        raycaster.setFromCamera(pointer, camera)
+            // Raycaster
+            raycaster.setFromCamera(pointer, camera)
 
-        const intersects = raycaster.intersectObjects( scene.children );
+            const intersects = raycaster.intersectObjects( scene.children );
 
-        console.log(intersects);
-        for (const element of intersects) {
-            if(element.object.type !== "Points" && element.object.name !== "asteroid" && element.object.name !== "ringSaturne"){
-                clickedObject = element.object;
-                inClick = true;
-                console.log(clickedObject.name);
-                document.getElementById("pnameText").style.opacity = 1;
-                document.getElementById("pnameText").innerHTML = clickedObject.name;
+            for (const element of intersects) {
+                if(element.object.type !== "Points" && element.object.name !== "asteroid" && element.object.name !== "ringSaturne"){
+                    clickedObject = element.object;
+                    inClick = true;
+                    console.log(clickedObject.name);
+                    document.getElementById("pnameText").style.opacity = 1;
+                    document.getElementById("pnameText").innerHTML = clickedObject.name;
+                }
             }
-        }
-1
 
-        if(inClick && event.button == 2){
-            inClick = false;
-            document.getElementById("pnameText").style.opacity = 0;
-            controls.target = new THREE.Vector3(0,0,0);
+            if(inClick && event.button == 2){
+                inClick = false;
+                document.getElementById("pnameText").style.opacity = 0;
+                controls.target = new THREE.Vector3(0,0,0);
+            }
         }
 
     })
