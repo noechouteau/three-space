@@ -8,6 +8,7 @@ let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHe
 let renderer = new THREE.WebGLRenderer();
 
 let loaded = false;
+let started = false;
 
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.shadowMap.enabled = true;
@@ -87,14 +88,14 @@ for (const planet of planets) {
     const clock = new THREE.Clock();
 	 
     // Lights
-    let sunlight = new THREE.PointLight(0xffffff, 250, 100);
-
+    let sunlight = new THREE.PointLight(0xffffff, 250, 480);
 
     sunlight.position.set(0, 0, 0);
     sunlight.castShadow = true;
     scene.add(sunlight);
 
-    let ambientLight = new THREE.AmbientLight(0x404040, 0.25);
+    let ambientLight = new THREE.AmbientLight(0x404040, 3);
+
     scene.add(ambientLight);
 
     // Shadows
@@ -197,7 +198,7 @@ for (const planet of planets) {
     window.addEventListener('keydown', (event) =>
     {
         console.log(document.getElementById("title").style.opacity)
-        if(event.key == " " && loaded){
+        if(event.key == " " && loaded && started){
             if(document.getElementById("title").style.opacity == ""){
                 renderer.domElement.style.visibility = "visible"
 
@@ -359,6 +360,7 @@ for (const planet of planets) {
             setTimeout(() => {
                 document.getElementById("p2-title").style.opacity = 1;
                 document.getElementById("p2-title").style.top = 0;
+                started = true;
             }, 2300);
      }
 
